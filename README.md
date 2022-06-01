@@ -7,5 +7,5 @@
 ## <a title="Atividade 3" href="https://github.com/vieiraaluiza/ciencia_colab/blob/main/Script/Rscript_ativ3_LuizaVieira.R" target="_blank">Atividade 3</a> 
 ## <a title="Atividade 4" href="https://github.com/vieiraaluiza/ciencia_colab/tree/main/Atividade%204" target="_blank">Atividade 4</a>
 ## <a title="Atividade 5" href="https://github.com/vieiraaluiza/ciencia_colab/blob/main/Atividade_5_files/Atividade_5.html" target="_blank">Atividade 5</a>
-## <a title="Atividade final" href="https://github.com/vieiraaluiza/ciencia_colab/blob/main/Chaetodon_striatus/Atividade_final.Rmd" target="_blank">Atividade final</a>
+## <a title="Atividade final" href="https://vieiraaluiza.github.io/ciencia_colab/Chaetodon_striatus/Atividade_final" target="_blank">Atividade final</a>
 
