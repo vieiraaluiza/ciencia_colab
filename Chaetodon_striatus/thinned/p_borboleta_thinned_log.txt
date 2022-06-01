@@ -263,3 +263,9 @@ Writing file: ./thinned/p_borboleta_thinned_thin1_new_new_new_new_new_new_new.cs
 ./thinned/p_borboleta_thinned_thin2_new_new_new_new_new_new.csv ' already exists. Renaming file 
                                    to avoid overwriting.
 Writing file: ./thinned/p_borboleta_thinned_thin2_new_new_new_new_new_new.csv
+********************************************** 
+ Beginning Spatial Thinning.
+ Script Started at: Wed Jun 01 18:19:30 2022
+
+Thinning Parameter Used (in km): 20
+Number of replicates of thinning script: 5
