@@ -1,0 +1,543 @@
+---
+title: "Atividade_final"
+author: "Luiza Vieira"
+date: "31/05/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## <font color="gray">Informações gerais da atividade</font> {.unnumbered}
+
+<ul type="circle">
+<li> A atividade teve como objetivo ser uma das etapas iniciais da Modelagem de Distribuição de Especies (MDE). 
+<li> Essa etapa inicial foi a limpeza dos dados de ocorrência da espécie e a escolha das variáveis e a limpeza das variáveis importantes para entrar no modelo. 
+<li> Utilizei os registros da atividade 3 com a espécie <font color="green">*Chaetodon striatus*</font>.
+<li> Essa atividade será dividida em 3 etapas: Variáveis ambientais, Ocorrência da espécie e Análise de Componentes Principais (PCA)
+</ul>
+
+### <font color="gray">Todos os pacotes que foram usados na primeira etapa</font> {.unnumbered}
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+library(raster)
+library(rgdal) 
+library(maptools)
+library(usdm) 
+library(CoordinateCleaner)
+library(spocc)
+library(spThin)
+library(dplyr)
+library(dismo)
+library(corrplot)
+```
+
+
+### <font color="green">1. Variáveis ambientais</font>
+<ul type="circle">
+<li>As variaveis foram obtidas pela base de dados do <p><a title="Bio-Oracle" href="https://bio-oracle.org/" target="_blank">Bio-Oracle</a></p>
+<li> As variáveis são do presente e são de profundidade superficial</ul>
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+Calcite.mean = raster("./Variaveis/Present.Surface.Calcite.Mean.tif") #Concentração média de Calcita
+Chlorophyll.mean = raster("./Variaveis/Present.Surface.Chlorophyll.Mean.tif") #Concentração média de clorofila
+Chlorophyll.min = raster("./Variaveis/Present.Surface.Chlorophyll.Min.tif") #Concentração mínima de clorofila
+Chlorophyll.range = raster("./Variaveis/Present.Surface.Chlorophyll.Range.tif") #Amplitude da concentração de clorofila
+Cloud.cover.max = raster("./Variaveis/Present.Surface.Cloud.cover.Max.tif") #Cobertura de nuvens máxima
+Cloud.cover.mean = raster("./Variaveis/Present.Surface.Cloud.cover.Mean.tif") #Cobertura de nuvens média
+Cloud.cover.min = raster("./Variaveis/Present.Surface.Cloud.cover.Min.tif") #Cobertura de nuvens mínima
+C.Velocity.mean = raster("./Variaveis/Present.Surface.Current.Velocity.Mean.tif") #Velocidade de corrente mínima
+C.Velocity.min = raster("./Variaveis/Present.Surface.Current.Velocity.Min.tif") #Velocidade de corrente média
+C.Velocity.range = raster("./Variaveis/Present.Surface.Current.Velocity.Range.tif") #Amplitude da velocidade de corrente
+Diffuse.attenuation.max = raster("./Variaveis/Present.Surface.Diffuse.attenuation.Max.tif") #Atenuação difusa máxima
+Diffuse.attenuation.min = raster("./Variaveis/Present.Surface.Diffuse.attenuation.Min.tif") #Atenuação difusa mínima
+Dissolved.ox.max = raster("./Variaveis/Present.Surface.Dissolved.oxygen.Max.tif") #Concentração de oxigênio dissolvido máximo
+Dissolved.ox.mean = raster("./Variaveis/Present.Surface.Dissolved.oxygen.Mean.tif") #Concentração de oxigênio dissolvido médio
+Dissolved.ox.min = raster("./Variaveis/Present.Surface.Dissolved.oxygen.Min.tif") #Concentração de oxigênio dissolvido mínimo
+Dissolved.ox.range = raster("./Variaveis/Present.Surface.Dissolved.oxygen.Range.tif") #Amplitude da concentração de oxigênio dissolvido
+Iron.mean = raster("./Variaveis/Present.Surface.Iron.Mean.tif") #Concentração de ferro média
+Iron.min = raster("./Variaveis/Present.Surface.Iron.Min.tif") #Concentração de ferro mínima
+Nitrate.max = raster("./Variaveis/Present.Surface.Nitrate.Max.tif") #Concentração de nitrato máxima
+Nitrate.mean = raster("./Variaveis/Present.Surface.Nitrate.Mean.tif") #Concentração de nitrato médio
+Nitrate.min = raster("./Variaveis/Present.Surface.Nitrate.Min.tif") #Concentração de nitrato mínimo
+Nitrate.range = raster("./Variaveis/Present.Surface.Nitrate.Range.tif") #Amplitude de concentração de nitrato 
+PAR.max = raster("./Variaveis/Present.Surface.Par.Max.tif") #Radiação fotossinteticamente ativa máxima
+PAR.mean = raster("./Variaveis/Present.Surface.Par.Mean.tif") #Radiação fotossinteticamente ativa média
+pH = raster("./Variaveis/Present.Surface.pH.tif") #pH
+Phosphate.max = raster("./Variaveis/Present.Surface.Phosphate.Max.tif") #Concentração de fosfato máxima
+Phosphate.mean = raster("./Variaveis/Present.Surface.Phosphate.Mean.tif") #Concentração de fosfato médio
+Phosphate.min = raster("./Variaveis/Present.Surface.Phosphate.Min.tif") #Concentração de fosfato mínimo
+Phosphate.range = raster("./Variaveis/Present.Surface.Phosphate.Range.tif") #Amplitude da concentração de fosfato
+Phytoplankton.max = raster("./Variaveis/Present.Surface.Phytoplankton.Max.tif") #Concentração de fitoplancton máxima
+Phytoplankton.mean = raster("./Variaveis/Present.Surface.Phytoplankton.Mean.tif") #Concentração de fitoplancton média
+Phytoplankton.min = raster("./Variaveis/Present.Surface.Phytoplankton.Min.tif") #Concentração de fitoplancton mínima
+Phytoplankton.range = raster("./Variaveis/Present.Surface.Phytoplankton.Range.tif") #Amplitude de concentração de fitoplancton
+Primary.Productivity.mean = raster("./Variaveis/Present.Surface.Primary.productivity.Mean.tif") #Produtividade primária média
+Primary.Productivity.min = raster("./Variaveis/Present.Surface.Primary.productivity.Min.tif") #Produtividade primária mínima
+Primary.Productivity.range = raster("./Variaveis/Present.Surface.Primary.productivity.Range.tif") #Amplitude de produtividade primária
+Salinity.max = raster("./Variaveis/Present.Surface.Salinity.Max.tif") #Salinidade máxima
+Salinity.mean = raster("./Variaveis/Present.Surface.Salinity.Mean.tif") #Salinidade média
+Salinity.range = raster("./Variaveis/Present.Surface.Salinity.Range.tif") #Amplitude da salinidade
+Salinity.min = raster("./Variaveis/Present.Surface.Salinity.Min.tif") #Salinidade mínima
+Silicate.max = raster("./Variaveis/Present.Surface.Silicate.Max.tif") #Concentração de silicato máxima
+Silicate.mean = raster("./Variaveis/Present.Surface.Silicate.Mean.tif") #Concentração de silitato média
+Silicate.min = raster("./Variaveis/Present.Surface.Silicate.Min.tif") #Concentração de silicato mínima
+Temp.max = raster("./Variaveis/Present.Surface.Temperature.Max.tif") #Temperatura máxima
+Temp.min = raster("./Variaveis/Present.Surface.Temperature.Min.tif") #Temperatura mínima
+Temp.range = raster("./Variaveis/Present.Surface.Temperature.Range.tif") #Amplitude da temperatura 
+Temp.mean = raster("./Variaveis/Present.Surface.Temperature.Mean.tif") #Temperatura média
+```
+<ul type="circle">
+<li>Depois disso, foi preciso limitar a extensão que foi utilizada para a atividade de acordo com a ocorrência da espécie</ul>
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+atlantic.ext <- extent(-100, 0, -40, 40)
+```
+
+<ul type="circle">
+<li>Polígono das Ecorregiões do Western Atlantic</ul>
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+ecoreg <- readOGR("./Ecorregion/Atlantico_EUA_Brazil/Shape_Stega_Atlantico_EUA_Brazil.shp")
+```
+
+<ul type="circle">
+<li>Cortar as variáveis de acordo com os limites do polígono</ul>
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+Calcite.mean.ecoreg <- mask(crop(Calcite.mean, atlantic.ext), ecoreg)
+Chlorophyll.mean.ecoreg <- mask(crop(Chlorophyll.mean, atlantic.ext), ecoreg)
+Chlorophyll.min.ecoreg <- mask(crop(Chlorophyll.min, atlantic.ext), ecoreg)
+Chlorophyll.range.ecoreg <- mask(crop(Chlorophyll.range, atlantic.ext), ecoreg)
+Cloud.cover.max.ecoreg <- mask(crop(Cloud.cover.max, atlantic.ext), ecoreg)
+Cloud.cover.mean.ecoreg <- mask(crop(Cloud.cover.mean, atlantic.ext), ecoreg)
+Cloud.cover.min.ecoreg <- mask(crop(Cloud.cover.min, atlantic.ext), ecoreg)
+C.Velocity.mean.ecoreg <- mask(crop(C.Velocity.mean, atlantic.ext), ecoreg)
+C.Velocity.min.ecoreg <- mask(crop(C.Velocity.min, atlantic.ext), ecoreg)
+C.Velocity.range.ecoreg <- mask(crop(C.Velocity.range, atlantic.ext), ecoreg)
+Diffuse.attenuation.max.ecoreg <- mask(crop(Diffuse.attenuation.max, atlantic.ext), ecoreg)
+Diffuse.attenuation.min.ecoreg <- mask(crop(Diffuse.attenuation.min, atlantic.ext), ecoreg)
+Dissolved.ox.max.ecoreg <- mask(crop(Dissolved.ox.max, atlantic.ext), ecoreg)
+Dissolved.ox.mean.ecoreg <- mask(crop(Dissolved.ox.mean, atlantic.ext), ecoreg)
+Dissolved.ox.min.ecoreg <- mask(crop(Dissolved.ox.min, atlantic.ext), ecoreg)
+Dissolved.ox.range.ecoreg <- mask(crop(Dissolved.ox.range, atlantic.ext), ecoreg)
+Iron.mean.ecoreg <- mask(crop(Iron.mean, atlantic.ext), ecoreg)
+Iron.min.ecoreg <- mask(crop(Iron.min, atlantic.ext), ecoreg)
+Nitrate.max.ecoreg <- mask(crop(Nitrate.max, atlantic.ext), ecoreg)
+Nitrate.mean.ecoreg <- mask(crop(Nitrate.mean, atlantic.ext), ecoreg)
+Nitrate.min.ecoreg <- mask(crop(Nitrate.min, atlantic.ext), ecoreg)
+Nitrate.range.ecoreg <- mask(crop(Nitrate.range, atlantic.ext), ecoreg)
+PAR.max.ecoreg <- mask(crop(PAR.max, atlantic.ext), ecoreg)
+PAR.mean.ecoreg <- mask(crop(PAR.mean, atlantic.ext), ecoreg)
+pH.ecoreg <- mask(crop(pH, atlantic.ext), ecoreg)
+Phosphate.max.ecoreg <- mask(crop(Phosphate.max, atlantic.ext), ecoreg)
+Phosphate.mean.ecoreg <- mask(crop(Phosphate.mean, atlantic.ext), ecoreg)
+Phosphate.min.ecoreg <- mask(crop(Phosphate.min, atlantic.ext), ecoreg)
+Phosphate.range.ecoreg <- mask(crop(Phosphate.range, atlantic.ext), ecoreg)
+Phytoplankton.max.ecoreg <- mask(crop(Phytoplankton.max, atlantic.ext), ecoreg)
+Phytoplankton.mean.ecoreg <- mask(crop(Phytoplankton.mean, atlantic.ext), ecoreg)
+Phytoplankton.min.ecoreg <- mask(crop(Phytoplankton.min, atlantic.ext), ecoreg)
+Phytoplankton.range.ecoreg <- mask(crop(Phytoplankton.range, atlantic.ext), ecoreg)
+Primary.Productivity.mean.ecoreg <- mask(crop(Primary.Productivity.mean, atlantic.ext), ecoreg)
+Primary.Productivity.min.ecoreg <- mask(crop(Primary.Productivity.min, atlantic.ext), ecoreg)
+Primary.Productivity.range.ecoreg <- mask(crop(Primary.Productivity.range, atlantic.ext), ecoreg)
+Salinity.max.ecoreg <- mask(crop(Salinity.max, atlantic.ext), ecoreg)
+Salinity.mean.ecoreg <- mask(crop(Salinity.mean, atlantic.ext), ecoreg)
+Salinity.range.ecoreg <- mask(crop(Salinity.range, atlantic.ext), ecoreg)
+Salinity.min.ecoreg <- mask(crop(Salinity.min, atlantic.ext), ecoreg)
+Silicate.max.ecoreg <- mask(crop(Silicate.max, atlantic.ext), ecoreg)
+Silicate.mean.ecoreg <- mask(crop(Silicate.mean, atlantic.ext), ecoreg)
+Silicate.min.ecoreg <- mask(crop(Silicate.min, atlantic.ext), ecoreg)
+Temp.max.ecoreg <- mask(crop(Temp.max, atlantic.ext), ecoreg)
+Temp.min.ecoreg <- mask(crop(Temp.min, atlantic.ext), ecoreg)
+Temp.range.ecoreg <- mask(crop(Temp.range, atlantic.ext), ecoreg)
+Temp.mean.ecoreg <- mask(crop(Temp.mean, atlantic.ext), ecoreg)
+```
+
+<ul type="circle">
+<li>Comparar as camadas para ver se estão todas no mesmo formato</ul>
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+compareRaster(Temp.mean.ecoreg, Temp.range.ecoreg, Temp.min.ecoreg, Temp.max.ecoreg, Silicate.min.ecoreg, Silicate.mean.ecoreg, Silicate.max.ecoreg, Salinity.min.ecoreg, Salinity.range.ecoreg, Salinity.mean.ecoreg, Salinity.max.ecoreg, Primary.Productivity.range.ecoreg, Primary.Productivity.min.ecoreg, Primary.Productivity.mean.ecoreg, Phytoplankton.range.ecoreg, Phytoplankton.min.ecoreg, Primary.Productivity.mean.ecoreg, Phytoplankton.max.ecoreg, Phosphate.range.ecoreg, Phosphate.min.ecoreg, Phosphate.mean.ecoreg, Phosphate.max.ecoreg, pH.ecoreg, PAR.mean.ecoreg, PAR.max.ecoreg, Nitrate.range.ecoreg, Nitrate.min.ecoreg, Nitrate.mean.ecoreg, Nitrate.max.ecoreg, Iron.min.ecoreg, Iron.mean.ecoreg, Dissolved.ox.range.ecoreg, Dissolved.ox.min.ecoreg, Dissolved.ox.mean.ecoreg, Dissolved.ox.max.ecoreg, Diffuse.attenuation.min.ecoreg, Diffuse.attenuation.max.ecoreg, C.Velocity.range.ecoreg, C.Velocity.min.ecoreg, C.Velocity.mean.ecoreg, Calcite.mean.ecoreg, Chlorophyll.mean.ecoreg, Chlorophyll.min.ecoreg, Chlorophyll.range.ecoreg, Cloud.cover.max.ecoreg, Cloud.cover.mean.ecoreg, Cloud.cover.min.ecoreg)
+```
+
+<ul type="circle">
+<li>Criar um stack com todas as variáveis</ul>
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+Variaveis_1 <- stack(Temp.mean.ecoreg, Temp.range.ecoreg, Temp.min.ecoreg, Temp.max.ecoreg, Silicate.min.ecoreg, Silicate.mean.ecoreg, Silicate.max.ecoreg, Salinity.min.ecoreg, Salinity.range.ecoreg, Salinity.mean.ecoreg, Salinity.max.ecoreg, Primary.Productivity.range.ecoreg, Primary.Productivity.min.ecoreg, Primary.Productivity.mean.ecoreg, Phytoplankton.range.ecoreg, Phytoplankton.min.ecoreg, Primary.Productivity.mean.ecoreg, Phytoplankton.max.ecoreg, Phosphate.range.ecoreg, Phosphate.min.ecoreg, Phosphate.mean.ecoreg, Phosphate.max.ecoreg, pH.ecoreg, PAR.mean.ecoreg, PAR.max.ecoreg, Nitrate.range.ecoreg, Nitrate.min.ecoreg, Nitrate.mean.ecoreg, Nitrate.max.ecoreg, Iron.min.ecoreg, Iron.mean.ecoreg, Dissolved.ox.range.ecoreg, Dissolved.ox.min.ecoreg, Dissolved.ox.mean.ecoreg, Dissolved.ox.max.ecoreg, Diffuse.attenuation.min.ecoreg, Diffuse.attenuation.max.ecoreg, C.Velocity.range.ecoreg, C.Velocity.min.ecoreg, C.Velocity.mean.ecoreg, Calcite.mean.ecoreg, Chlorophyll.mean.ecoreg, Chlorophyll.min.ecoreg, Chlorophyll.range.ecoreg, Cloud.cover.max.ecoreg, Cloud.cover.mean.ecoreg, Cloud.cover.min.ecoreg)
+```
+
+<ul type="circle">
+<li>Serve para se poder reproduzir os resultados dos geradores de números pseudo-aleatórios</ul>
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+set.seed(1963) 
+```
+
+<ul type="circle">
+<li>Verificar se as variáveis são colineares por meio do fator de inflação da variância (VIF)
+vircor (threshold = 0.7)
+```{r, echo=T, message=FALSE, warning=FALSE}
+vifcor(Variaveis_1,th = 0.7)
+```
+
+virstep (threshold = 10)
+```{r, echo=T, message=FALSE, warning=FALSE}
+vifstep(Variaveis_1, th = 10)
+```
+</ul>
+
+<ul type="circle">
+<li> A partir dessa analise, foram ser excluídas as variáveis com multicolinearidade
+<li> Foi escolhido o valor de corte do vifstep</ul>
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+Variaveis_2 <- vifstep(Variaveis_1, th = 10)
+
+Variaveis_2 <- exclude(Variaveis_1, Variaveis_2)
+vifstep(Variaveis_1, th = 10)
+```
+
+### <font color="gray">Todos os pacotes que foram usados na segunda etapa</font> {.unnumbered}
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+
+library(rgbif)
+library(robis)
+library(tidyverse)
+library(ggmap)
+library(maps)
+```
+
+### <font color="green">2. Ocorrências da espécie *Chaetodon striatus*</font>
+
+<ul type="circle">
+<li>Baixar as ocorrências da espécie por meio da base de dados <p><a title="GBIF" href="https://www.gbif.org/" target="_blank">GBIF</a></p> </ul>
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+p_borboleta <- occ_data(scientificName = "Chaetodon striatus", 
+                      hasCoordinate = TRUE,
+                      hasGeospatialIssue=FALSE)
+```
+
+<ul type="circle">
+<li>Checar número de linhas, colunas e os nomes das colunas. Foi atribuído também os dados ao objeto</ul>
+
+```{r, echo=T}
+dim(p_borboleta$data)
+
+```
+
+```{r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+p_borboleta$data %>% names
+
+p_borboleta <- p_borboleta$data
+```
+
+<ul type="circle">
+<li>Checar os possíveis erros</ul>
+
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+gbif_issues()
+```
+
+``` {r, echo=T }
+issues_gbif <- p_borboleta$issues %>%
+  unique()
+gbif_issues() %>%
+  data.frame() %>% 
+  filter(code %in% issues_gbif) 
+```
+
+<ul type="circle">
+<li>Selecionar e investigar as variáveis</ul>
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+p_borboleta_1 <- p_borboleta %>%
+  dplyr::select(scientificName, decimalLatitude, decimalLongitude) %>% 
+  distinct()
+
+lapply(p_borboleta_1, unique)
+```
+
+<ul type="circle">
+<li>Usando agora o CoordinateCleaner para limpar as variáveis</ul>
+
+``` {r, echo=T }
+flags_spatial_gbif <- CoordinateCleaner::clean_coordinates(
+  x = p_borboleta_1, 
+  species = "scientificName",
+  lon = "decimalLongitude", 
+  lat = "decimalLatitude",
+  tests = c("capitals", # raio ao redor de capitais
+            "centroids", # raio ao redor de centroides de países e províncias
+            "duplicates", # duplicatas
+            "equal", # coordenadas iguais
+            "gbif", # raio ao redor da sede da GBIF
+            "institutions", # raio ao redor de instituicoes de pesquisa em biodiversidade
+            "urban", # pontos dentro de areas urbanas
+            "validity", # ponto de fora do sistema de coordenadas
+            "zeros" # zeros e pontos onde lat = lon 
+  )
+)
+```
+``` {r, echo=T }
+
+p_borboleta_1 <- p_borboleta_1 %>% 
+  dplyr::filter(flags_spatial_gbif$.summary == TRUE)
+```
+
+<ul type="circle">
+<li>Plotar </ul>
+``` {r, echo=T}
+
+ggplot() +
+  geom_polygon(data = ecoreg, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = p_borboleta_1, aes(x = decimalLongitude, y = decimalLatitude), color = "red") +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Chaetodon striatus")))
+```
+
+
+<ul type="circle">
+<li>Baixar as ocorrências da espécie por meio da base de dados <p><a title="OBIS" href="https://obis.org/" target="_blank">OBIS</a></p> </ul>
+
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+p_borboleta_obis <- robis::occurrence("Chaetodon striatus")
+
+names(p_borboleta_obis)
+```
+
+<ul type="circle">
+<li>Selecionar as colunas e registros únicos para fazer a limpeza </ul>
+
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+p_borboleta_obis_1 <- p_borboleta_obis %>% 
+  dplyr::select(scientificName, decimalLatitude, decimalLongitude, bathymetry,
+                flags, waterBody, basisOfRecord, occurrenceStatus, rightsHolder, 
+                datasetName, recordedBy, depth, locality, habitat) %>% 
+  distinct()
+```
+
+
+<ul type="circle">
+<li>Checar os problemas reportados</ul>
+``` {r, echo=T}
+p_borboleta_obis_1 %>% 
+  distinct(flags)
+```
+
+
+<ul type="circle">
+<li>Retirar os problemas reportados e verificar as demais variáveis</ul>
+
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+p_borboleta_obis_1 %>% 
+  filter(!flags %in% c("on_land,no_depth","no_depth,on_land", "on_land", "on_land,depth_exceeds_bath", "depth_exceeds_bath,on_land", "no depth", "na", "depth_exceeds_bath"),
+         !is.na(datasetName)) %>% 
+  lapply(., unique)
+```
+
+
+<ul type="circle">
+<li>Limpar os dados pelo CoordinateCleaner</ul>
+
+``` {r, echo=T}
+flags_spatial_obis <- CoordinateCleaner::clean_coordinates(
+  x = p_borboleta_obis_1, 
+  species = "scientificName",
+  lon = "decimalLongitude", 
+  lat = "decimalLatitude",
+  tests = c("capitals", # raio ao redor de capitais
+            "centroids", # raio ao redor de centroides de paises e provincias
+            "duplicates", # duplicatas
+            "equal", # coordenadas iguais
+            "gbif", # raio ao redor da sede da GBIF
+            "institutions", # raio ao redor de instituicoes de pesquisa em biodiversidade
+            "urban", # pontos dentro de areas urbanas
+            "validity", # ponto de fora do sistema de coordenadas
+            "zeros" # zeros e pontos onde lat = lon 
+  )
+)
+
+p_borboleta_obis_1 <- p_borboleta_obis_1 %>% 
+  dplyr::filter(flags_spatial_obis$.summary == TRUE)
+```
+
+
+
+<ul type="circle">
+<li>Selecionar apenas as variáveis de interesse (apenas as coordenadas)</ul>
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+p_borboleta_obis_1 <- p_borboleta_obis %>% 
+  dplyr::select(scientificName, decimalLatitude, decimalLongitude) %>% 
+  distinct()
+```
+
+
+<ul type="circle">
+<li>Plotar no polígono</ul>
+
+``` {r, echo=T}
+ggplot() +
+  geom_polygon(data = ecoreg, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = p_borboleta_obis_1, aes(x = decimalLongitude, y = decimalLatitude)) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Chaetodon striatus")))
+```
+
+### <font color="gray">Juntar os dados do **GBIF** com o do **OBIS**</font>
+
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+all_data <- bind_rows(p_borboleta_1 %>% 
+                        mutate(repo = paste0("gbif", row.names(.))), 
+                      p_borboleta_obis_1 %>% 
+                        mutate(repo = paste0("obis", row.names(.)))) %>%
+  column_to_rownames("repo") %>% 
+  dplyr::select(decimalLongitude, decimalLatitude) %>% 
+  distinct() %>% 
+  rownames_to_column("occ") %>% 
+  separate(col = "occ", into = c("datasetName", "rn"), sep = 4) %>%
+  mutate(scientificName = "Chaetodon striatus") %>% 
+  dplyr::select(-rn)
+
+all_data
+```
+
+
+<ul type="circle">
+<li>spthin para ajustar a correlação espacial
+<li> Foi criado o diretório thinned </ul>
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+dir.create("./thinned")
+```
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+all_data_thin <- 
+  thin( loc.data = all_data, 
+        lat.col = "decimalLatitude", long.col = "decimalLongitude", 
+        spec.col = "scientificName", 
+        thin.par = 20 #distancia em km que os registros vao ficar separados#  
+        ,reps = 5, 
+        locs.thinned.list.return = TRUE, 
+        write.files = TRUE, 
+        max.files = 2, 
+        out.dir = "./thinned", out.base = "p_borboleta_thinned", 
+        write.log.file = TRUE,
+        log.file = "./thinned/p_borboleta_thinned_log.txt")
+
+plotThin(all_data_thin)
+```
+
+<ul type="circle">
+<li>Salvar o csv</ul>
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+all_data_thin = read.csv("./thinned/p_borboleta_thinned_thin1.csv", sep=",")
+View(all_data_thin)
+```
+
+<ul type="circle">
+<li>Limpar os registros fora do Western Atlantic</ul>
+
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+c(all_data_thin$decimalLongitude)
+
+print(all_data_thin)
+
+all_data_thin_r <- all_data_thin[-c(127, 259),]
+```
+
+<ul type="circle">
+<li>Mapa com todas as ocorrências</ul>
+
+``` {r, echo=T}
+ggplot() +
+  geom_polygon(data = ecoreg, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = all_data_thin_r, aes(x = decimalLongitude, y = decimalLatitude)) +
+  #theme(legend.title = element_blank()) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Chaetodon striatus")))
+write.csv(all_data, "occ_GBIF-OBIS_par_hepa.csv", row.names = FALSE)
+```
+
+
+### <font color="gray">Todos os pacotes que foram usados na terceira etapa</font> {.unnumbered}
+``` {r, echo=T, results = 'hide'}
+library(sp)
+library(rgdal)
+library(ggplot2)
+library(devtools)
+library(ggbiplot)
+```
+
+### <font color="green">3. PCA</font>
+
+<ul type="circle">
+<li>Transformar em dados espaciais</ul>
+
+``` {r, echo=T, results = 'hide', message=FALSE}
+coordinates(all_data_thin_r) <- ~ decimalLongitude+decimalLatitude
+class(all_data_thin_r)
+```
+
+<ul type="circle">
+<li>Plotar os dados espaciais</ul>
+``` {r, echo=T}
+plot(all_data_thin_r)
+```
+
+
+<ul type="circle">
+<li>Verificando se todas as informações do dataframe estão corretas e preenchidas</ul>
+``` {r, echo=T, results = 'hide', message=FALSE}
+all_data_thin_r
+
+proj4string (all_data_thin_r) <- CRS("+proj=longlat +datum=WGS84 +no_defs")
+```
+
+``` {r, echo=T, results = 'hide', message=FALSE}
+valores_var_Chaetodonstriatus <- data.frame(raster::extract(Variaveis_2, all_data_thin_r))
+View(valores_var_Chaetodonstriatus)
+
+c(valores_var_Chaetodonstriatus)
+```
+
+<ul type="circle">
+<li>Tirar os valores NA do conjunto de dados</ul>
+``` {r, echo=T, results = 'hide', message=FALSE}
+valores_semNA = valores_var_Chaetodonstriatus %>% tidyr::drop_na(Present.Surface.Temperature.Range, Present.Surface.Temperature.Max, Present.Surface.Silicate.Min, Present.Surface.Salinity.Range, Present.Surface.Nitrate.Range, Present.Surface.Par.Max, Present.Surface.Par.Mean, Present.Surface.pH, Present.Surface.Phosphate.Min, Present.Surface.Phosphate.Range, Present.Surface.Primary.productivity.Min, Present.Surface.Primary.productivity.Range, Present.Surface.Salinity.Max, Present.Surface.Nitrate.Min, Present.Surface.Iron.Mean, Present.Surface.Diffuse.attenuation.Max, Present.Surface.Current.Velocity.Range, Present.Surface.Current.Velocity.Min, Present.Surface.Calcite.Mean, Present.Surface.Cloud.cover.Max, Present.Surface.Cloud.cover.Min)
+```
+
+<ul type="circle">
+<li>Rodando o PCA</ul>
+``` {r, echo=T}
+PCA_1 = prcomp(valores_semNA, center = TRUE, scale. = TRUE)
+PCA_1
+```
+
+``` {r, echo=T}
+attributes(PCA_1)
+summary(PCA_1)
+```
+
+<ul type="circle">
+<li>Preparando para plotar</ul>
+``` {r, echo=T, results = 'hide', message=FALSE, warning=FALSE}
+g_PCA_1= ggbiplot(PCA_1, obs.scale = 0.5, var.scale = 5, ellipse = FALSE, alpha = 0.1, varname.size = 2.5, varname.adjust = 2.5, var.axes = TRUE, varname.abbrev = TRUE)
+g_PCA_1= g_PCA_1+theme_bw()
+g_PCA_1<-g_PCA_1 + scale_color_discrete(name = '')
+g_PCA_1<-g_PCA_1 + theme(legend.direction = 'horizontal',legend.position = 'top')
+```
+
+<ul type="circle">
+<li>Plotando o resultado do PCA</ul>
+``` {r, echo=T}
+plot(g_PCA_1)
+```
+
+
+Em relação ao resultado do PCA, foi possível observar que os dois primeiros eixos explicam juntos 41% da distribuição. Os principais fatores responsáveis pela variação no PC1 foram Temperatura máxima (negativamente) e Concentração de fitoplancton mínimo (positivamente). Já no PC2, foi Salinidade máxima (negativamente) e Concentração de Silicato mínima (positivamente).
+
+
+
